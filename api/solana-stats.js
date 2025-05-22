@@ -20,7 +20,7 @@ export default async function handler(req, res) {
     const json = await response.json()
 
     if (!response.ok || !json.data) {
-      return res.status(502).json({ error: "Could not fetch token balances" })
+      return res.status(502).json({ error: "Could not fetch RELItoken balances" })
     }
 
     const reliToken = json.data.find(token => token.tokenAddress === reliMint)
