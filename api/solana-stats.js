@@ -1,36 +1,42 @@
 export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
 
-  const walletAddress = "mURebvH2M73cPW1FXLSL31sqQjux5rfLXKwLnZ5mNbn";
+  const RPC_URL = "https://api.mainnet-beta.solana.com";
   const reliMint = "ReE7L7o65Aarh8qKrD8zcpd2TM5qxwuvn4CARx2H2qg";
-  const heliusKey = "bde63a4e-4f34-43e9-9290-0194cd8b3e1e";
+  const walletAddress = "mURebvH2M73cPW1FXLSL31sqQjux5rfLXKwLnZ5mNbn";
 
   try {
-    const response = await fetch(
-      `https://api.helius.xyz/v0/addresses/${walletAddress}/balances?api-key=${heliusKey}`
-    );
+    const response = await fetch(RPC_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        jsonrpc: "2.0",
+        id: 1,
+        method: "getTokenAccountsByOwner",
+        params: [
+          walletAddress,
+          {
+            mint: reliMint
+          },
+          {
+            encoding: "jsonParsed"
+          }
+        ]
+      })
+    });
 
-    if (!response.ok) {
-      throw new Error(`Helius API error: ${response.statusText}`);
-    }
+    const json = await response.json();
 
-    const data = await response.json();
-    const tokens = data.tokens || [];
-
-    const reliToken = tokens.find(
-      (token) =>
-        token?.mint === reliMint &&
-        parseFloat(token?.amount || 0) > 0
-    );
-
-    if (!reliToken) {
+    if (!json.result?.value?.length) {
       return res.status(200).json({ balance: 0 });
     }
 
-    const balance = parseFloat(reliToken.amount);
+    const tokenAccount = json.result.value[0];
+    const amount = tokenAccount.account.data.parsed.info.tokenAmount.uiAmount;
 
-    res.status(200).json({ balance });
+    res.status(200).json({ balance: amount });
   } catch (err) {
+    console.error("Solana RPC error:", err);
     res.status(500).json({ error: err.message });
   }
 }
