@@ -1,9 +1,10 @@
 export default async function handler(req, res) {
+  res.setHeader("Access-Control-Allow-Origin", "*") // Add this line
+
   const RELI_MINT = "ReE7L7o65Aarh8qKrD8zcpd2TM5qxwuvn4CARx2H2qg"
   const RPC_URL = "https://api.mainnet-beta.solana.com"
 
   try {
-    // Get token supply
     const supplyRes = await fetch(RPC_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -26,7 +27,6 @@ export default async function handler(req, res) {
     const rawAmount = parseFloat(supplyValue.amount)
     const supply = rawAmount / Math.pow(10, decimals)
 
-    // Get top holders
     const holdersRes = await fetch(RPC_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
