@@ -1,29 +1,22 @@
 export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*")
 
-  // Replace with your real wallet address
   const walletAddress = "mURebvH2M73cPW1FXLSL31sqQjux5rfLXKwLnZ5mNbn"
   const reliMint = "ReE7L7o65Aarh8qKrD8zcpd2TM5qxwuvn4CARx2H2qg"
-  const apiKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjcmVhdGVkQXQiOjE3NDc3NzEwMzM2NTAsImVtYWlsIjoic2VsaWdhbm1kQGdtYWlsLmNvbSIsImFjdGlvbiI6InRva2VuLWFwaSIsImFwaVZlcnNpb24iOiJ2MiIsImlhdCI6MTc0Nzc3MTAzM30.PXQMNCZU_NoY2UF-ubk52IdgNzTWBeVDB2_cQz_qD_4"
+  const heliusKey = "bde63a4e-4f34-43e9-9290-0194cd8b3e1e"
 
   try {
     const response = await fetch(
-      `https://pro-api.solscan.io/v2.0/account/tokens?address=${walletAddress}`,
-      {
-        headers: {
-          "accept": "application/json",
-          "token": apiKey,
-        },
-      }
+      `https://api.helius.xyz/v0/addresses/${walletAddress}/tokens?api-key=${heliusKey}`
     )
 
-    const json = await response.json()
+    const tokens = await response.json()
 
-    if (!response.ok || !json.data) {
-      return res.status(502).json({ error: "Could not fetch RELItoken balances" })
-    }
-
-    const reliToken = json.data.find(token => token.tokenAddress === reliMint)
+    const reliToken = tokens.find(
+      (token) =>
+        token?.tokenAccount?.mint === reliMint &&
+        parseFloat(token?.tokenAmount?.amount || 0) > 0
+    )
 
     if (!reliToken) {
       return res.status(200).json({ balance: 0 })
