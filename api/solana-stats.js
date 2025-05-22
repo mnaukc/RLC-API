@@ -29,13 +29,13 @@ export default async function handler(req, res) {
     const rawAmount = parseFloat(supplyValue.amount)
     const supply = rawAmount / Math.pow(10, decimals)
 
-    // Get token holders using getProgramAccounts
+    // Get token accounts for this mint
     const accountsRes = await fetch(RPC_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         jsonrpc: "2.0",
-        id: 1,
+        id: 2,
         method: "getProgramAccounts",
         params: [
           TOKEN_PROGRAM,
@@ -43,22 +43,28 @@ export default async function handler(req, res) {
             encoding: "jsonParsed",
             filters: [
               {
-                dataSize: 165, // Token account size
+                dataSize: 165
               },
               {
                 memcmp: {
-                  offset: 0, // Mint field offset
-                  bytes: RELI_MINT,
-                },
-              },
-            ],
-          },
-        ],
+                  offset: 0,
+                  bytes: RELI_MINT
+                }
+              }
+            ]
+          }
+        ]
       }),
     })
 
     const accountsJson = await accountsRes.json()
-    const holders = accountsJson?.result?.length || 0
+    const result = accountsJson?.result || []
+
+    // Count only accounts with balance > 0
+    const holders = result.filter(account => {
+      const amount = account.account?.data?.parsed?.info?.tokenAmount?.uiAmount
+      return amount && amount > 0
+    }).length
 
     return res.status(200).json({ supply, decimals, holders })
   } catch (error) {
