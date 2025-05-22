@@ -10,9 +10,11 @@ export default async function handler(req, res) {
       `https://api.helius.xyz/v0/addresses/${walletAddress}/tokens?api-key=${heliusKey}`
     )
 
-    const tokens = await response.json()
+    const json = await response.json()
 
-    const reliToken = tokens.find(
+    const tokenArray = json.tokens || json // adapt based on structure
+
+    const reliToken = tokenArray.find(
       (token) =>
         token?.tokenAccount?.mint === reliMint &&
         parseFloat(token?.tokenAmount?.amount || 0) > 0
