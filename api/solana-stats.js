@@ -2,7 +2,7 @@ export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*")
 
   // Replace with your real wallet address
-  const walletAddress = "A9cxEcnvfboaHvQHYy1GMaZCSWhVEZuGZ6UjgUF2gbf4"
+  const walletAddress = "mURebvH2M73cPW1FXLSL31sqQjux5rfLXKwLnZ5mNbn"
   const reliMint = "ReE7L7o65Aarh8qKrD8zcpd2TM5qxwuvn4CARx2H2qg"
   const apiKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjcmVhdGVkQXQiOjE3NDc3NzEwMzM2NTAsImVtYWlsIjoic2VsaWdhbm1kQGdtYWlsLmNvbSIsImFjdGlvbiI6InRva2VuLWFwaSIsImFwaVZlcnNpb24iOiJ2MiIsImlhdCI6MTc0Nzc3MTAzM30.PXQMNCZU_NoY2UF-ubk52IdgNzTWBeVDB2_cQz_qD_4"
 
