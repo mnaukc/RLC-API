@@ -7,34 +7,27 @@ export default async function handler(req, res) {
 
   try {
     const response = await fetch(
-      `https://api.helius.xyz/v0/addresses/${walletAddress}/tokens`,
-      {
-        headers: {
-          accept: "application/json",
-          "api-key": heliusKey,
-        },
-      }
+      `https://api.helius.xyz/v0/addresses/${walletAddress}/balances?api-key=${heliusKey}`
     );
 
     if (!response.ok) {
       throw new Error(`Helius API error: ${response.statusText}`);
     }
 
-    const tokens = await response.json();
+    const data = await response.json();
+    const tokens = data.tokens || [];
 
     const reliToken = tokens.find(
       (token) =>
-        token?.tokenAccount?.mint === reliMint &&
-        parseFloat(token?.tokenAmount?.amount || 0) > 0
+        token?.mint === reliMint &&
+        parseFloat(token?.amount || 0) > 0
     );
 
     if (!reliToken) {
       return res.status(200).json({ balance: 0 });
     }
 
-    const raw = parseFloat(reliToken.tokenAmount.amount);
-    const decimals = parseInt(reliToken.tokenAmount.decimals);
-    const balance = raw / Math.pow(10, decimals);
+    const balance = parseFloat(reliToken.amount);
 
     res.status(200).json({ balance });
   } catch (err) {
