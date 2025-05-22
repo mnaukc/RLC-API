@@ -11,10 +11,9 @@ export default async function handler(req, res) {
     )
 
     const json = await response.json()
+    const tokens = json.tokens || []
 
-    const tokenArray = json.tokens || json // adapt based on structure
-
-    const reliToken = tokenArray.find(
+    const reliToken = tokens.find(
       (token) =>
         token?.tokenAccount?.mint === reliMint &&
         parseFloat(token?.tokenAmount?.amount || 0) > 0
