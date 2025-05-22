@@ -1,29 +1,41 @@
-// api/reli-stats.js
-
 export default async function handler(req, res) {
-  const BIRDEYE_API_KEY = "7f1aaf197d104594af236f15f0746c6b"
-  const RELI_ADDRESS = "ReE7L7o65Aarh8qKrD8zcpd2TM5qxwuvn4CARx2H2qg"
+  const RELI_MINT = "ReE7L7o65Aarh8qKrD8zcpd2TM5qxwuvn4CARx2H2qg"
+  const RPC_URL = "https://api.mainnet-beta.solana.com"
 
   try {
-    const response = await fetch(`https://public-api.birdeye.so/public/token/${RELI_ADDRESS}`, {
-      headers: {
-        "X-API-KEY": BIRDEYE_API_KEY,
-      },
+    // Get token supply
+    const supplyRes = await fetch(RPC_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        jsonrpc: "2.0",
+        id: 1,
+        method: "getTokenSupply",
+        params: [RELI_MINT],
+      }),
     })
 
-    const json = await response.json()
+    const supplyJson = await supplyRes.json()
+    const { amount, decimals } = supplyJson.result.value
+    const supply = parseFloat(amount) / Math.pow(10, decimals)
 
-    if (!response.ok || !json.data) {
-      return res.status(502).json({ error: json.message || "Birdeye API failed" })
-    }
+    // Get top holders
+    const holdersRes = await fetch(RPC_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        jsonrpc: "2.0",
+        id: 1,
+        method: "getTokenLargestAccounts",
+        params: [RELI_MINT],
+      }),
+    })
 
-    const { price, fdv, holders } = json.data
+    const holdersJson = await holdersRes.json()
+    const holders = holdersJson.result.value.length
 
-    // Optional caching header (1 hour)
-    res.setHeader("Cache-Control", "s-maxage=3600, stale-while-revalidate")
-
-    return res.status(200).json({ price, fdv, holders })
+    return res.status(200).json({ supply, decimals, holders })
   } catch (error) {
-    return res.status(500).json({ error: "Server error: " + error.message })
+    return res.status(500).json({ error: error.message })
   }
 }
