@@ -16,8 +16,15 @@ export default async function handler(req, res) {
     })
 
     const supplyJson = await supplyRes.json()
-    const { amount, decimals } = supplyJson.result.value
-    const supply = parseFloat(amount) / Math.pow(10, decimals)
+    const supplyValue = supplyJson?.result?.value
+
+    if (!supplyValue || !supplyValue.amount) {
+      return res.status(502).json({ error: "Failed to fetch token supply" })
+    }
+
+    const decimals = parseInt(supplyValue.decimals)
+    const rawAmount = parseFloat(supplyValue.amount)
+    const supply = rawAmount / Math.pow(10, decimals)
 
     // Get top holders
     const holdersRes = await fetch(RPC_URL, {
@@ -25,14 +32,15 @@ export default async function handler(req, res) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         jsonrpc: "2.0",
-        id: 1,
+        id: 2,
         method: "getTokenLargestAccounts",
         params: [RELI_MINT],
       }),
     })
 
     const holdersJson = await holdersRes.json()
-    const holders = holdersJson.result.value.length
+    const holderList = holdersJson?.result?.value
+    const holders = Array.isArray(holderList) ? holderList.length : 0
 
     return res.status(200).json({ supply, decimals, holders })
   } catch (error) {
